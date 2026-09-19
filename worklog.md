@@ -1010,3 +1010,28 @@ Stage Summary:
 - All 5 platforms live: GitHub + Vercel + Neon + Inngest + Turso
 - All features working on production with zero errors
 - Single Vercel deployment: main app (Neon) + Wasl (Turso) + Mashahd (Turso) + AI (OpenRouter/Nvidia) + Inngest
+
+---
+Task ID: 35
+Agent: orchestrator (COO/PM)
+Task: Functional Inngest cron jobs + Vercel-safe image uploads
+
+Work Log:
+- Rewrote Inngest functions to actually DO real database work (were no-ops):
+  1. capsule-unseal: every minute, finds capsules whose unsealAt has passed, marks them as unsealed so they appear in the feed
+  2. whisper-burn: every minute, finds whispers whose TTL has expired (firstViewedAt set + expiresAt passed), marks them as burned
+  3. pulse-snapshot: every 5 minutes, counts pulse events in the last 5 minutes for monitoring
+- Functions use Prisma directly (they run on our Vercel serverless, triggered by Inngest via HTTP)
+- Fixed upload route: was missing from git (.gitignore had "upload/"). Force-added it.
+- Upload route now returns data URI (base64) instead of writing to local filesystem — works on Vercel's read-only serverless
+- Deployed to Vercel + synced Inngest: 3 functions, sync success, SDK v4.20.0
+- Verified on production:
+  - Upload: returns data:image/png;base64,... ✓
+  - Inngest: "Successfully registered" ✓
+  - All 7 API endpoints: HTTP 200 ✓
+  - Lint: 0 errors ✓
+
+Stage Summary:
+- Inngest cron jobs now perform real maintenance (capsule auto-unseal, whisper auto-burn, pulse monitoring)
+- Image uploads work on Vercel (data URI persistence in Neon Postgres)
+- All 5 platforms verified live and functional
