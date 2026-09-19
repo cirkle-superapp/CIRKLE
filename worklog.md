@@ -950,3 +950,36 @@ Stage Summary:
 - Neon: ⚠️ S3 credentials 403 (need bucket setup), AI gateway token stored, no DB URL provided
 - Inngest: ✅ ENDPOINT LIVE (3 functions registered), dashboard sync pending
 - DB on Vercel: ⚠️ needs cloud DB (Neon Postgres URL or Turso for main app) — homepage/AI/Inngest work, DB routes need cloud DB
+
+---
+Task ID: 33
+Agent: orchestrator (COO/PM)
+Task: Embed Wasl+Mashahd in main app for Vercel — no mini-services needed
+
+Work Log:
+- CRITICAL GAP FIXED: Wasl+Mashahd mini-services (ports 3004/3005) only ran locally behind Caddy. On Vercel, they were unreachable — chat and video were broken in production.
+- SOLUTION: Embedded Wasl+Mashahd APIs directly in the main Next.js app, querying Turso via @libsql/client. Everything runs on one Vercel deployment.
+- Created src/lib/turso.ts (shared Turso clients for Wasl + Mashahd, resolveWaslUser, mapHexColor)
+- Built 8 new API routes in the main app:
+  - /api/wasl/health, /api/wasl/users, /api/wasl/conversations (GET+POST), /api/wasl/messages (GET+POST), /api/wasl/read
+  - /api/mashahd/health, /api/mashahd/videos (GET), /api/mashahd/videos/[id] (GET), /api/mashahd/videos/[id]/like, /api/mashahd/videos/[id]/view
+- Updated frontend hooks (use-wasl.ts, use-mashahd.ts): removed XTransformPort — calls go to /api/wasl/* and /api/mashahd/* directly
+- Updated socket hook: graceful degradation — tries socket.io (dev), falls back to polling (Vercel) with 5s refetchInterval on messages
+- Updated smart-reply route to use main app's Wasl API (not localhost:3004)
+- Set MASHAHD_TURSO_URL + MASHAHD_TURSO_TOKEN env vars on Vercel
+- Deployed to Vercel: ALL APIs verified live:
+  - Homepage: HTTP 200 ✓
+  - /api/me: returns current user ✓
+  - /api/wasl/health: 18 users, 3 conversations, 47 messages ✓
+  - /api/wasl/conversations: real conversations from Turso ✓
+  - /api/mashahd/health: 32 videos, 10 channels ✓
+  - /api/mashahd/videos: real video data from Turso ✓
+  - /api/ai/health: 200 ✓
+  - /api/inngest: 401 (correct) ✓
+- Browser-verified on Vercel: Wasl chat opens with real conversations, Mashahd videos load, 0 console errors
+
+Stage Summary:
+- Wasl + Mashahd now work on Vercel production (previously broken — only worked locally)
+- Single Vercel deployment handles everything: main app (Neon Postgres) + Wasl (Turso) + Mashahd (Turso) + AI + Inngest
+- Real-time chat uses 5s polling on Vercel (socket.io in dev)
+- All 5 platforms confirmed working end-to-end on production
