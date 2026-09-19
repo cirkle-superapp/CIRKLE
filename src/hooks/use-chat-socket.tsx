@@ -48,7 +48,7 @@ export function ChatSocketProvider({
     // On Vercel (serverless), this will fail gracefully — chat uses polling instead.
     let s: Socket | null = null;
     try {
-      s = io("/, {
+      s = io("/", {
         transports: ["websocket", "polling"],
         reconnection: false,
         timeout: 3000,
