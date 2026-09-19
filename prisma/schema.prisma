@@ -1,0 +1,246 @@
+// Cirkle Social — Facebook-like schema (SQLite)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  username    String   @unique
+  email       String   @unique
+  bio         String?
+  avatarColor String   @default("teal") // teal | rose | steel | gold | charcoal
+  verified    Boolean  @default(false)
+  coverUrl    String?
+  createdAt   DateTime @default(now())
+
+  posts        Post[]
+  comments     Comment[]
+  likes        Like[]
+  stories      Story[]
+  notifications Notification[]
+  sentMessages   Message[] @relation("MessageFrom")
+  receivedMessages Message[] @relation("MessageTo")
+  friendshipsInitiated Friendship[] @relation("FriendshipInitiator")
+  friendshipsReceived  Friendship[] @relation("FriendshipReceiver")
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  authorId     String
+  content      String
+  imageUrl     String?
+  feeling      String?  // e.g. "feeling happy"
+  location     String?
+  createdAt    DateTime @default(now())
+
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  likes      Like[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  authorId  String
+  imageUrl  String
+  caption   String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // like | comment | friend | mention
+  content   String
+  actorId   String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  content   String
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+
+  from User @relation("MessageFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to   User @relation("MessageTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@index([fromId, toId])
+  @@index([toId, fromId])
+}
+
+model Friendship {
+  id          String  @id @default(cuid())
+  initiatorId String
+  receiverId  String
+  status      String  @default("accepted") // accepted | pending
+  createdAt   DateTime @default(now())
+
+  initiator User @relation("FriendshipInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+  receiver  User @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([initiatorId, receiverId])
+}
+
+model SavedPost {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+}
+
+// ─── Futuristic Cirkle features (ported from cirkle-ac8fabe4) ───
+
+/// Time-capsule posts: sealed content released at a future date (F4).
+/// SHA-256 anchor hash proves the content existed before unseal time.
+model TimeCapsule {
+  id          String   @id @default(cuid())
+  authorId    String
+  payload     String
+  anchorHash  String
+  sealedAt    DateTime @default(now())
+  unsealAt    DateTime
+  unsealed    Boolean  @default(false)
+  visibility  String   @default("public") // public | self
+  createdAt   DateTime @default(now())
+
+  @@index([unsealAt, unsealed])
+  @@index([authorId])
+}
+
+/// Whispers: self-destruct messages that burn after TTL or max views (F5).
+model Whisper {
+  id             String   @id @default(cuid())
+  fromId         String
+  toId           String
+  body           String
+  ttlSeconds     Int      @default(60)
+  viewCount      Int      @default(0)
+  maxViews       Int      @default(1)
+  burned         Boolean  @default(false)
+  firstViewedAt  DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime @default(now())
+
+  @@index([toId, burned])
+  @@index([expiresAt])
+}
+
+/// Pulse events: real-time per-pillar activity stream (for PulseRibbon F3).
+model PulseEvent {
+  id        String   @id @default(cuid())
+  pillar    String   // wasl | midan | mashahd | lamahat | feed
+  kind      String   // message | post | view | like | comment
+  weight    Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([pillar, createdAt])
+}
+
+/// Privacy Simulator runs — "What can X see?" visibility scores per viewer kind (F15).
+model PrivacySimRun {
+  id               String   @id @default(cuid())
+  userId           String
+  viewerKind       String   // stranger | friend | employer | advertiser | state
+  score            Int      // 0-100 visibility
+  fields           String   // JSON array of visible fields
+  recommendations  String   // JSON array of recommendations
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Family Vault — Shamir M-of-N social-recovery vaults (F10).
+model FamilyVault {
+  id           String   @id @default(cuid())
+  ownerId      String
+  name         String
+  secretHash   String   // SHA-256 anchor of the sealed secret
+  threshold    Int      // M shares required to unlock
+  totalShares  Int      // N total shares
+  createdAt    DateTime @default(now())
+
+  holders      VaultHolder[]
+
+  @@index([ownerId])
+}
+
+model VaultHolder {
+  id        String   @id @default(cuid())
+  vaultId   String
+  userId    String
+  name      String
+  relation  String
+  consented Boolean  @default(false)
+  consentedAt DateTime?
+
+  vault FamilyVault @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+
+  @@index([vaultId])
+}
+
+/// Event Tickets — cryptographically-anchored passes (F12).
+model EventTicket {
+  id            String   @id @default(cuid())
+  ownerId       String
+  eventName     String
+  eventDate     String
+  venue         String
+  tier          String   // general | vip | press | free
+  anchorHash    String   // SHA-256 proof
+  qrSeed        String   // rotating QR seed
+  state         String   @default("issued") // issued | validated | used | revoked | transferred
+  createdAt     DateTime @default(now())
+
+  @@index([ownerId])
+}

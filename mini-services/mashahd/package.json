@@ -1,0 +1,15 @@
+{
+  "name": "mashahd-service",
+  "version": "1.0.0",
+  "description": "Mashahd video backend mini-service for Cirkle (Turso + Hono, port 3005)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "start": "bun index.ts"
+  },
+  "dependencies": {
+    "hono": "^4",
+    "@libsql/client": "^0.14"
+  }
+}

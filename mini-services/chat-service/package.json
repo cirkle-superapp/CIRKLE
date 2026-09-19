@@ -1,0 +1,17 @@
+{
+  "name": "cirkle-chat-service",
+  "version": "1.0.0",
+  "description": "Real-time chat relay service for Cirkle Social (socket.io)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "start": "bun index.ts"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}

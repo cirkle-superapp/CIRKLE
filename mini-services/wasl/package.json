@@ -1,0 +1,16 @@
+{
+  "name": "wasl-service",
+  "version": "1.0.0",
+  "dependencies": {
+    "hono": "^4",
+    "@libsql/client": "^0.14",
+    "socket.io": "^4"
+  },
+  "description": "Wasl — Cirkle's chat pillar. Standalone Bun service with own Turso DB (local fallback) + Hono HTTP + socket.io realtime.",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "start": "bun index.ts"
+  },
+  "type": "module"
+}
