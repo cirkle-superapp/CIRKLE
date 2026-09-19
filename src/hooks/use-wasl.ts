@@ -5,11 +5,9 @@ import type { WaslConversation, WaslMessage, WaslUser } from "@/lib/wasl/types";
 import { WASL_CURRENT_USER_ID } from "@/lib/wasl/types";
 
 const BASE = "/api/wasl";
-const PORT = "3004";
 
 async function wfetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const sep = path.includes("?") ? "&" : "?";
-  const url = `${BASE}${path}${sep}XTransformPort=${PORT}`;
+  const url = `${BASE}${path}`;
   const res = await fetch(url, {
     ...opts,
     headers: { "Content-Type": "application/json", ...(opts?.headers || {}) },
@@ -54,6 +52,7 @@ export function useWaslMessages(conversationId: string | null) {
     queryFn: () =>
       wfetch<WaslMessage[]>(`/messages?conversationId=${conversationId}`),
     enabled: !!conversationId,
+    refetchInterval: 5000, // Poll every 5s for new messages (replaces socket.io on Vercel)
   });
 }
 
@@ -96,6 +95,6 @@ export function useMarkWaslRead() {
 export function useWaslUsers() {
   return useQuery<WaslUser[]>({
     queryKey: ["wasl", "users"],
-    queryFn: () => wfetch<WaslUser[]>("/users"),
+    queryFn: () => wfetch<{ users: WaslUser[] }>("/users").then((r) => r.users),
   });
 }

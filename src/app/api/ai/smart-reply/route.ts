@@ -13,10 +13,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "conversationId is required" }, { status: 400 });
     }
 
-    // Fetch recent messages from the Wasl service (its own DB, port 3004)
-    // via the Caddy gateway. Wasl conversations live there, not in the main app's DB.
+    // Fetch recent messages from the main app's Wasl API (queries Turso directly).
     const waslRes = await fetch(
-      `http://localhost:3004/api/wasl/messages?conversationId=${conversationId}`
+      `http://localhost:3000/api/wasl/messages?conversationId=${conversationId}`
     );
     if (!waslRes.ok) {
       return NextResponse.json({

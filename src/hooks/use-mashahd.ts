@@ -42,11 +42,9 @@ export interface MashahdVideoDetail extends MashahdVideo {
 }
 
 const BASE = "/api/mashahd";
-const PORT = "3005";
 
 async function mfetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const sep = path.includes("?") ? "&" : "?";
-  const url = `${BASE}${path}${sep}XTransformPort=${PORT}`;
+  const url = `${BASE}${path}`;
   const res = await fetch(url, {
     ...opts,
     headers: { "Content-Type": "application/json", ...(opts?.headers || {}) },

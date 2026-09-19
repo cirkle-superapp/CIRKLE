@@ -44,22 +44,37 @@ export function ChatSocketProvider({
   const [connected, setConnected] = React.useState(false);
 
   React.useEffect(() => {
-    const s = io("/?XTransformPort=3004", { transports: ["websocket", "polling"] });
-    setSocket(s);
+    // Try to connect to the local socket.io (works in dev with the Wasl mini-service).
+    // On Vercel (serverless), this will fail gracefully — chat uses polling instead.
+    let s: Socket | null = null;
+    try {
+      s = io("/?XTransformPort=3004", {
+        transports: ["websocket", "polling"],
+        reconnection: false,
+        timeout: 3000,
+      });
+      setSocket(s);
 
-    s.on("connect", () => {
-      setConnected(true);
-      s.emit("join", { userId: WASL_CURRENT_USER_ID });
-    });
-    s.on("disconnect", () => setConnected(false));
+      s.on("connect", () => {
+        setConnected(true);
+        s!.emit("join", { userId: WASL_CURRENT_USER_ID });
+      });
+      s.on("disconnect", () => setConnected(false));
+      s.on("connect_error", () => setConnected(false));
 
-    if (onIncoming) s.on("new_message", onIncoming);
-    if (onTyping) s.on("typing", (p: { conversationId: string; senderId: string }) => onTyping(p.conversationId, p.senderId));
-    if (onStopTyping) s.on("stop_typing", (p: { conversationId: string; senderId: string }) => onStopTyping(p.conversationId, p.senderId));
+      if (onIncoming) s.on("new_message", onIncoming);
+      if (onTyping) s.on("typing", (p: { conversationId: string; senderId: string }) => onTyping(p.conversationId, p.senderId));
+      if (onStopTyping) s.on("stop_typing", (p: { conversationId: string; senderId: string }) => onStopTyping(p.conversationId, p.senderId));
+    } catch {
+      // Socket.io not available (Vercel production) — chat works via polling.
+      setConnected(false);
+    }
 
     return () => {
-      s.removeAllListeners();
-      s.disconnect();
+      if (s) {
+        s.removeAllListeners();
+        s.disconnect();
+      }
     };
      
   }, []);
