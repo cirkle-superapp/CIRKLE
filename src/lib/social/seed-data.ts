@@ -32,7 +32,7 @@ export async function seedDatabase() {
       avatarColor: "gold",
       verified: true,
       bio: "Building my circle, one connection at a time.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-you",
+      coverUrl: "https://picsum.photos/id/577/1600/600.jpg",
     },
   });
 
@@ -56,7 +56,7 @@ export async function seedDatabase() {
       avatarColor: "teal",
       verified: true,
       bio: "Designer & weekend painter. Tea over coffee, always.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-aisha",
+      coverUrl: "https://picsum.photos/id/544/1600/600.jpg",
     },
     {
       id: "u_marco",
@@ -65,7 +65,7 @@ export async function seedDatabase() {
       email: "marco@cirkle.app",
       avatarColor: "steel",
       bio: "Cyclist, amateur chef, father of two tiny humans.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-marco",
+      coverUrl: "https://picsum.photos/id/612/1600/600.jpg",
     },
     {
       id: "u_yuki",
@@ -74,7 +74,7 @@ export async function seedDatabase() {
       email: "yuki@cirkle.app",
       avatarColor: "rose",
       bio: "Sound engineer. I collect old cassette tapes.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-yuki",
+      coverUrl: "https://picsum.photos/id/718/1600/600.jpg",
     },
     {
       id: "u_layla",
@@ -84,7 +84,7 @@ export async function seedDatabase() {
       avatarColor: "gold",
       verified: true,
       bio: "Astrophysicist in training. The universe is mostly patience.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-layla",
+      coverUrl: "https://picsum.photos/id/177/1600/600.jpg",
     },
     {
       id: "u_james",
@@ -93,7 +93,7 @@ export async function seedDatabase() {
       email: "james@cirkle.app",
       avatarColor: "charcoal",
       bio: "Marathon runner. Lagos → London → wherever next.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-james",
+      coverUrl: "https://picsum.photos/id/496/1600/600.jpg",
     },
     {
       id: "u_sofia",
@@ -102,7 +102,7 @@ export async function seedDatabase() {
       email: "sofia@cirkle.app",
       avatarColor: "teal",
       bio: "Pastry chef. Currently obsessed with miso caramel.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-sofia",
+      coverUrl: "https://picsum.photos/id/1022/1600/600.jpg",
     },
     {
       id: "u_omar",
@@ -112,7 +112,7 @@ export async function seedDatabase() {
       avatarColor: "rose",
       verified: true,
       bio: "Architect & ukulele noodler. Designing slowly.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-omar",
+      coverUrl: "https://picsum.photos/id/893/1600/600.jpg",
     },
     {
       id: "u_mei",
@@ -121,7 +121,7 @@ export async function seedDatabase() {
       email: "mei@cirkle.app",
       avatarColor: "steel",
       bio: "Botanist. Talk to me about ferns.",
-      coverUrl: "https://loremflickr.com/1600/600/landscape/cirkle-cover-mei",
+      coverUrl: "https://picsum.photos/id/280/1600/600.jpg",
     },
   ];
 
@@ -169,7 +169,7 @@ export async function seedDatabase() {
       authorId: "u_aisha",
       content:
         "Spent the morning reorganizing my paint shelf by hue. My brain feels like a tidy little rainbow now.",
-      imageUrl: "cirkle1?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/701/1200/800.jpg",
       feeling: "feeling inspired",
       location: "Lisbon, Portugal",
       daysAgo: 0,
@@ -195,7 +195,7 @@ export async function seedDatabase() {
       authorId: "u_yuki",
       content:
         "Found a working Walkman at the flea market. The first tape I popped in was my dad's old mix. I cried in public.",
-      imageUrl: "cirkle2?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/702/1200/800.jpg",
       feeling: "feeling nostalgic",
       location: "Tokyo, Japan",
       daysAgo: 1,
@@ -212,7 +212,7 @@ export async function seedDatabase() {
       authorId: "u_james",
       content:
         "Long run before sunrise. The city belongs to the early people — and the street cleaners. Both waved back.",
-      imageUrl: "cirkle3?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/703/1200/800.jpg",
       location: "London, UK",
       daysAgo: 1,
     },
@@ -220,7 +220,7 @@ export async function seedDatabase() {
       authorId: "u_sofia",
       content:
         "Miso caramel is officially in the croquembouche. I will be taking no further questions at this time.",
-      imageUrl: "cirkle4?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/704/1200/800.jpg",
       feeling: "feeling triumphant",
       location: "Mexico City, Mexico",
       daysAgo: 2,
@@ -229,7 +229,7 @@ export async function seedDatabase() {
       authorId: "u_omar",
       content:
         "Sketching a tiny courtyard building today. The brief is 'quiet.' I think I might leave one wall completely blank.",
-      imageUrl: "cirkle5?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/705/1200/800.jpg",
       location: "Amman, Jordan",
       daysAgo: 2,
     },
@@ -237,7 +237,7 @@ export async function seedDatabase() {
       authorId: "u_mei",
       content:
         "The fern I rescued last winter unfurled its first new frond today. We are both very emotional about it.",
-      imageUrl: "cirkle6?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/706/1200/800.jpg",
       feeling: "feeling tender",
       daysAgo: 3,
     },
@@ -258,7 +258,7 @@ export async function seedDatabase() {
       authorId: "u_marco",
       content:
         "Bike number five is officially mine. She's a 1987 steel frame with chipped paint and a soul. I'll call her Penelope.",
-      imageUrl: "cirkle7?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/707/1200/800.jpg",
       location: "Bologna, Italy",
       daysAgo: 4,
     },
@@ -274,7 +274,7 @@ export async function seedDatabase() {
       authorId: "u_layla",
       content:
         "Hot take: the night sky is the only place where 'nothing happening' is the most exciting thing that can happen.",
-      imageUrl: "cirkle8?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/708/1200/800.jpg",
       feeling: "feeling small (in a good way)",
       location: "Western Desert, Egypt",
       daysAgo: 5,
@@ -289,7 +289,7 @@ export async function seedDatabase() {
       authorId: CURRENT_USER_ID,
       content:
         "Closed my laptop at 6pm and went outside. Revolutionary act, I know. Highly recommend.",
-      imageUrl: "cirkle9?w=1200&h=800&fit=crop",
+      imageUrl: "https://picsum.photos/id/709/1200/800.jpg",
       feeling: "feeling light",
       daysAgo: 6,
     },
