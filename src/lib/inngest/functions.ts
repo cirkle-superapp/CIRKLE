@@ -1,24 +1,20 @@
 import { inngest } from "./client";
-import { db } from "@/lib/db";
 
 // === Inngest background functions ===
-// These run on our Vercel serverless (Inngest triggers them via HTTP to /api/inngest).
-// They use Prisma directly to perform real database maintenance.
+// db is lazy-loaded inside step.run to avoid cold-start Prisma init issues on Vercel.
 
-// 1. Time capsule auto-unseal — every minute, mark capsules as unsealed when their time arrives.
+// 1. Time capsule auto-unseal — every minute.
 export const capsuleUnseal = inngest.createFunction(
   { id: "capsule-unseal", name: "Time Capsule Auto-Unseal", cron: "* * * * *" },
   async ({ step }) => {
     const result = await step.run("unseal-capsules", async () => {
+      const { db } = await import("@/lib/db");
       const now = new Date();
-      // Find capsules whose unseal time has passed but aren't marked unsealed yet.
       const expired = await db.timeCapsule.findMany({
         where: { unsealed: false, unsealAt: { lte: now } },
         select: { id: true },
       });
       if (expired.length === 0) return { unsealed: 0 };
-
-      // Mark them as unsealed so they appear in the feed.
       await db.timeCapsule.updateMany({
         where: { id: { in: expired.map((c) => c.id) } },
         data: { unsealed: true },
@@ -29,23 +25,18 @@ export const capsuleUnseal = inngest.createFunction(
   }
 );
 
-// 2. Whisper auto-burn — every minute, burn whispers that have exceeded their TTL or max views.
+// 2. Whisper auto-burn — every minute.
 export const whisperBurn = inngest.createFunction(
   { id: "whisper-burn", name: "Whisper Auto-Burn", cron: "* * * * *" },
   async ({ step }) => {
     const result = await step.run("burn-expired-whispers", async () => {
+      const { db } = await import("@/lib/db");
       const now = new Date();
-      // Find whispers that have been viewed (firstViewedAt set) and whose TTL has expired.
       const expired = await db.whisper.findMany({
-        where: {
-          burned: false,
-          firstViewedAt: { not: null },
-          expiresAt: { lte: now },
-        },
+        where: { burned: false, firstViewedAt: { not: null }, expiresAt: { lte: now } },
         select: { id: true },
       });
       if (expired.length === 0) return { burned: 0 };
-
       await db.whisper.updateMany({
         where: { id: { in: expired.map((w) => w.id) } },
         data: { burned: true },
@@ -56,15 +47,14 @@ export const whisperBurn = inngest.createFunction(
   }
 );
 
-// 3. Pulse snapshot — every 5 minutes, log a summary of pulse activity.
+// 3. Pulse snapshot — every 5 minutes.
 export const pulseSnapshot = inngest.createFunction(
   { id: "pulse-snapshot", name: "Pulse Snapshot", cron: "*/5 * * * *" },
   async ({ step }) => {
     const result = await step.run("snapshot-pulse", async () => {
+      const { db } = await import("@/lib/db");
       const since = new Date(Date.now() - 5 * 60 * 1000);
-      const count = await db.pulseEvent.count({
-        where: { createdAt: { gte: since } },
-      });
+      const count = await db.pulseEvent.count({ where: { createdAt: { gte: since } } });
       return { eventsInLast5Min: count, snapshotAt: new Date().toISOString() };
     });
     return result;
