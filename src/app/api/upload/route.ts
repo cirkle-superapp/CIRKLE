@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
+import { createClient } from "@libsql/client";
 
 export const dynamic = "force-dynamic";
 
+// Cirkle Turso DB for image storage (9GB free tier vs Neon's 0.5GB).
+const cirkleDb = createClient({
+  url: process.env.CIRKLE_TURSO_URL || "libsql://cirkle-superapp-fortleem.aws-us-east-1.turso.io",
+  authToken: process.env.CIRKLE_TURSO_TOKEN || process.env.DATABASE_AUTH_TOKEN || "",
+});
+
 // POST /api/upload — accepts FormData with a 'file' image field.
-// Auto-resizes to max 1200px wide, converts to JPEG at 80% quality,
-// returns a data URI (base64) that persists in the Neon DB.
-// This keeps images small (~100-300KB instead of 5MB phone photos).
+// Auto-resizes to max 1200px, JPEG 80%, stores in Cirkle Turso DB (not Neon).
+// Returns a URL that serves the image via /api/image/[id].
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -23,34 +29,40 @@ export async function POST(req: NextRequest) {
 
     const inputBuffer = Buffer.from(await file.arrayBuffer());
 
-    // Auto-resize: max 1200px wide, maintain aspect ratio, convert to JPEG 80% quality.
-    // This reduces a 5MB phone photo to ~100-300KB.
+    // Auto-resize: max 1200px, JPEG 80%.
     const resizedBuffer = await sharp(inputBuffer)
-      .resize(1200, 1200, {
-        fit: "inside",    // maintain aspect ratio, don't crop
-        withoutEnlargement: true,  // don't upscale small images
-      })
+      .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
       .jpeg({ quality: 80, mozjpeg: true })
       .toBuffer();
 
     const base64 = resizedBuffer.toString("base64");
-    const dataUri = `data:image/jpeg;base64,${base64}`;
+    const id = crypto.randomUUID();
 
+    // Store in Cirkle Turso DB (9GB free tier — images won't bloat Neon Postgres).
+    await cirkleDb.execute({
+      sql: "INSERT INTO images (id, data, content_type) VALUES (?, ?, ?)",
+      args: [id, base64, "image/jpeg"],
+    });
+
+    // Return a URL that serves the image.
     return NextResponse.json({
-      url: dataUri,
+      url: `/api/image/${id}`,
       originalSize: file.size,
       resizedSize: resizedBuffer.length,
-      width: 1200,
+      id,
     });
   } catch (e) {
-    // Fallback: if sharp fails (e.g., SVG input), return original as data URI
+    // Fallback: if Turso fails, return data URI (stored in Neon).
     try {
       const formData = await req.formData();
       const file = formData.get("file") as File;
       if (file) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const base64 = buffer.toString("base64");
-        const dataUri = `data:${file.type};base64,${base64}`;
+        const inputBuffer = Buffer.from(await file.arrayBuffer());
+        const resized = await sharp(inputBuffer)
+          .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+        const dataUri = `data:image/jpeg;base64,${resized.toString("base64")}`;
         return NextResponse.json({ url: dataUri, fallback: true });
       }
     } catch {}
