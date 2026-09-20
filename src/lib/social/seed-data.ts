@@ -169,7 +169,7 @@ export async function seedDatabase() {
       authorId: "u_aisha",
       content:
         "Spent the morning reorganizing my paint shelf by hue. My brain feels like a tidy little rainbow now.",
-      imageUrl: "https://picsum.photos/id/701/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/1/1200/800.jpg",
       feeling: "feeling inspired",
       location: "Lisbon, Portugal",
       daysAgo: 0,
@@ -195,7 +195,7 @@ export async function seedDatabase() {
       authorId: "u_yuki",
       content:
         "Found a working Walkman at the flea market. The first tape I popped in was my dad's old mix. I cried in public.",
-      imageUrl: "https://picsum.photos/id/702/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/2/1200/800.jpg",
       feeling: "feeling nostalgic",
       location: "Tokyo, Japan",
       daysAgo: 1,
@@ -212,7 +212,7 @@ export async function seedDatabase() {
       authorId: "u_james",
       content:
         "Long run before sunrise. The city belongs to the early people — and the street cleaners. Both waved back.",
-      imageUrl: "https://picsum.photos/id/703/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/3/1200/800.jpg",
       location: "London, UK",
       daysAgo: 1,
     },
@@ -220,7 +220,7 @@ export async function seedDatabase() {
       authorId: "u_sofia",
       content:
         "Miso caramel is officially in the croquembouche. I will be taking no further questions at this time.",
-      imageUrl: "https://picsum.photos/id/704/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/4/1200/800.jpg",
       feeling: "feeling triumphant",
       location: "Mexico City, Mexico",
       daysAgo: 2,
@@ -229,7 +229,7 @@ export async function seedDatabase() {
       authorId: "u_omar",
       content:
         "Sketching a tiny courtyard building today. The brief is 'quiet.' I think I might leave one wall completely blank.",
-      imageUrl: "https://picsum.photos/id/705/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/5/1200/800.jpg",
       location: "Amman, Jordan",
       daysAgo: 2,
     },
@@ -237,7 +237,7 @@ export async function seedDatabase() {
       authorId: "u_mei",
       content:
         "The fern I rescued last winter unfurled its first new frond today. We are both very emotional about it.",
-      imageUrl: "https://picsum.photos/id/706/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/6/1200/800.jpg",
       feeling: "feeling tender",
       daysAgo: 3,
     },
@@ -258,7 +258,7 @@ export async function seedDatabase() {
       authorId: "u_marco",
       content:
         "Bike number five is officially mine. She's a 1987 steel frame with chipped paint and a soul. I'll call her Penelope.",
-      imageUrl: "https://picsum.photos/id/707/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/7/1200/800.jpg",
       location: "Bologna, Italy",
       daysAgo: 4,
     },
@@ -274,7 +274,7 @@ export async function seedDatabase() {
       authorId: "u_layla",
       content:
         "Hot take: the night sky is the only place where 'nothing happening' is the most exciting thing that can happen.",
-      imageUrl: "https://picsum.photos/id/708/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/8/1200/800.jpg",
       feeling: "feeling small (in a good way)",
       location: "Western Desert, Egypt",
       daysAgo: 5,
@@ -289,7 +289,7 @@ export async function seedDatabase() {
       authorId: CURRENT_USER_ID,
       content:
         "Closed my laptop at 6pm and went outside. Revolutionary act, I know. Highly recommend.",
-      imageUrl: "https://picsum.photos/id/709/1200/800.jpg",
+      imageUrl: "https://picsum.photos/id/9/1200/800.jpg",
       feeling: "feeling light",
       daysAgo: 6,
     },
