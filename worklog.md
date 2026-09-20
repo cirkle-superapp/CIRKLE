@@ -1111,3 +1111,47 @@ Stage Summary:
 - AI assistant responds via OpenRouter
 - Images load with graceful fallback for any that fail
 - App is production-ready and fully functional
+
+---
+Task ID: 39
+Agent: orchestrator (COO/CTO/structuring expert)
+Task: Optimal zero-cost architecture restructuring
+
+Work Log:
+ARCHITECTURE DECISION:
+- Assessed moving main app from Neon Postgres to Turso (cirkle-superapp-fortleem)
+- Prisma doesn't support Turso directly for db:push (needs adapter, complex)
+- OPTIMAL SOLUTION: Keep Neon Postgres for main app data (text, 0.5GB sufficient) + use Cirkle Turso DB (9GB) for image storage
+- This separates heavy image data (base64) from the Neon DB, preventing the 0.5GB limit from being hit
+
+IMAGE STORAGE OPTIMIZATION:
+- Created `images` table in Cirkle Turso DB (cirkle-superapp-fortleem)
+- Updated /api/upload: images now stored in Turso (9GB free) instead of as data URIs in Neon (0.5GB)
+- Created /api/image/[id] serving route with 1-year immutable cache headers
+- Upload returns /api/image/[id] URL (compact) instead of data URI (bloated)
+- Fallback: if Turso fails, returns data URI (stored in Neon)
+
+INNGEST FIX:
+- Root cause: INNGEST_SIGNING_KEY env var was not set on Vercel
+- Fixed: set the env var, redeployed
+- Also fixed: Inngest v4 serve() returns a single handler function — export directly as GET/POST/PUT
+- Also fixed: lazy-load Prisma db inside step.run (avoids cold-start init crash)
+- Verified: "Successfully registered" on Vercel
+
+FINAL OPTIMAL STRUCTURE (zero cost):
+  Vercel (hobby free) → single Next.js deployment
+    ├─ Neon Postgres (free 0.5GB) → main app data (posts, users, capsules, whispers, vaults, tickets)
+    ├─ Turso wasl-fortleem (free) → Wasl chat (18 users, 47 messages)
+    ├─ Turso mashahd-fortleem (free) → Mashahd video (32 videos)
+    ├─ Turso cirkle-superapp-fortleem (free 9GB) → image storage (served via /api/image/[id])
+    ├─ OpenRouter + Nvidia (free) → AI text generation
+    ├─ Pollinations (free) → AI image generation
+    └─ Inngest (free) → 3 cron jobs (capsule unseal, whisper burn, pulse snapshot)
+  GitHub (free) → source code
+  Total cost: $0/month
+
+VERIFIED:
+- All 9 API endpoints: 200 ✓
+- Inngest sync: "Successfully registered" ✓
+- Image upload + serve: works (Turso storage) ✓
+- 0 console errors, 0 lint errors
