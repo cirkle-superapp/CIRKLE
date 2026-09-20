@@ -122,7 +122,20 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {post.imageUrl && (
-        <img src={post.imageUrl} alt="" className="max-h-[34rem] w-full object-cover" loading="lazy" />
+        <div className="relative w-full overflow-hidden bg-muted">
+          <img
+            src={post.imageUrl}
+            alt=""
+            className="max-h-[34rem] w-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onLoad={(e) => {
+              // Auto-adjust container height to image aspect ratio
+              const img = e.currentTarget;
+              img.parentElement!.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+            }}
+          />
+        </div>
       )}
 
       {/* Counts */}
