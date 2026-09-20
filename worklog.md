@@ -1035,3 +1035,27 @@ Stage Summary:
 - Inngest cron jobs now perform real maintenance (capsule auto-unseal, whisper auto-burn, pulse monitoring)
 - Image uploads work on Vercel (data URI persistence in Neon Postgres)
 - All 5 platforms verified live and functional
+
+---
+Task ID: 36
+Agent: orchestrator (COO/PM)
+Task: Auto-adjust image sizes + production upgrades
+
+Work Log:
+- Created /api/upload route with automatic image resizing using sharp:
+  - Max 1200px wide (maintains aspect ratio, no upscaling)
+  - Converts to JPEG at 80% quality (mozjpeg compression)
+  - Reduces 5MB phone photos to ~100-300KB
+  - Returns data URI for Vercel persistence
+  - Fallback: if sharp fails (e.g., SVG), returns original as data URI
+- Updated post card images: auto-adjust aspect ratio on load (prevents layout shift)
+  - Added decoding="async" for non-blocking image decode
+  - Container bg-muted as placeholder while loading
+  - onLoad sets aspect-ratio from naturalWidth/naturalHeight
+- Deployed to Vercel: all APIs verified live (upload returns resized JPEG data URI)
+- 0 lint errors, 0 console errors
+
+Stage Summary:
+- Image uploads now auto-resized (sharp: 1200px max, JPEG 80%) — prevents Neon DB bloat
+- Post images auto-adjust aspect ratio — no layout shift
+- All 5 platforms live and verified
