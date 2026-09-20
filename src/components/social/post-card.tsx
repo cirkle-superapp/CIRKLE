@@ -122,18 +122,30 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {post.imageUrl && (
-        <div className="relative w-full overflow-hidden bg-muted">
+        <div className="relative w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50">
           <img
             src={post.imageUrl}
             alt=""
             className="max-h-[34rem] w-full object-cover"
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             onLoad={(e) => {
-              // Auto-adjust container height to image aspect ratio
               const img = e.currentTarget;
-              img.parentElement!.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+              if (img.naturalWidth > 0) {
+                img.parentElement!.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+                img.style.opacity = "1";
+              }
             }}
+            onError={(e) => {
+              // Image failed to load — hide it and show a gradient placeholder
+              const img = e.currentTarget;
+              img.style.display = "none";
+              const parent = img.parentElement!;
+              parent.style.aspectRatio = "16 / 9";
+              parent.style.background = "linear-gradient(135deg, hsl(39 45% 57% / 0.15), hsl(351 41% 56% / 0.15), hsl(195 56% 23% / 0.2))";
+            }}
+            style={{ opacity: 0, transition: "opacity 0.3s ease" }}
           />
         </div>
       )}
