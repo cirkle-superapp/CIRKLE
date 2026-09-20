@@ -1059,3 +1059,26 @@ Stage Summary:
 - Image uploads now auto-resized (sharp: 1200px max, JPEG 80%) — prevents Neon DB bloat
 - Post images auto-adjust aspect ratio — no layout shift
 - All 5 platforms live and verified
+
+---
+Task ID: 37
+Agent: orchestrator (COO/PM)
+Task: Fix broken post images on production + image UX upgrades
+
+Work Log:
+- AUDIT: found 5 of 9 post images broken on Vercel (naturalWidth:0)
+- ROOT CAUSE 1: picsum.photos seed URLs use 302 redirects that intermittently fail in browser
+- ROOT CAUSE 2: some picsum IDs (706-714) return 404
+- ROOT CAUSE 3: browser referrer policy blocking some image loads
+- FIX 1: Changed seed image URLs from picsum.photos/seed/cirkleN/ to picsum.photos/id/1-9/ (verified all exist)
+- FIX 2: Added referrerPolicy="no-referrer" to post card images (fixes browser referrer blocking)
+- FIX 3: Added onError handler — failed images show a graceful gold/rose/teal gradient placeholder (16:9) instead of broken image icon
+- FIX 4: Added fade-in transition (opacity 0→1 on load) for smooth image appearance
+- FIX 5: Restored .env DATABASE_URL to Neon Postgres (was reverted to SQLite)
+- Verified on Vercel: 9/9 images visible, 0 broken, 0 console errors
+
+Stage Summary:
+- All post images now load correctly on production (referrerPolicy fix)
+- Failed images degrade gracefully (gradient placeholder, no broken icons)
+- Images fade in smoothly on load
+- All 5 platforms still live and verified
