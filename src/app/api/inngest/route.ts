@@ -4,19 +4,12 @@ import { functions } from "@/lib/inngest/functions";
 
 export const dynamic = "force-dynamic";
 
-// Inngest v4: serve() returns a single handler function that handles GET/POST/PUT.
+// Inngest v4: serve() returns a Next.js App Router handler function.
+// Use it directly as the route export.
 const handler = serve({
   client: inngest,
   functions,
   signingKey: process.env.INNGEST_SIGNING_KEY,
 });
 
-export async function GET(req: Request) {
-  return handler(req);
-}
-export async function POST(req: Request) {
-  return handler(req);
-}
-export async function PUT(req: Request) {
-  return handler(req);
-}
+export { handler as GET, handler as POST, handler as PUT };
