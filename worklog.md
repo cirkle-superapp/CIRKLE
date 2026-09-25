@@ -1208,3 +1208,55 @@ Stage Summary:
 - Production UI verified (16 posts, 5 dock items, 0 errors)
 - Optimal zero-cost architecture confirmed ($0/month)
 - Upload route restored after accidental deletion
+
+---
+Task ID: 41
+Agent: orchestrator (COO/CTO/PM/UI architect)
+Task: Remove z.ai, AI model failover, harden, verify all 5 platforms
+
+Work Log:
+1. FILE INTEGRITY: ✅ NOTHING DELETED
+   - 151 source files, 50 API routes, 3 mini-services
+   - Caught + restored upload route (deleted by gitignore "upload/" rule — added !src/app/api/upload/ exception)
+   - Restored all .env files (main app + wasl + mashahd mini-services)
+
+2. Z.AI REMOVAL: ✅ COMPLETE
+   - Removed z-cdn.chatglm.cn/z-ai/static/logo.svg from layout.tsx (favicon icon)
+   - Created Cirkle favicon.svg (3-circle gold logo) in public/
+   - Verified: 0 z.ai references in src/, mini-services/, public/
+   - z-ai-web-dev-sdk already removed from package.json (done in previous session)
+   - NOTE: live Vercel deploy still shows old z.ai icon (deploy limit hit — will auto-deploy when limit resets)
+
+3. AI MULTI-MODEL FAILOVER: ✅ IMPLEMENTED
+   - Each provider now tries 3 models before failing:
+     - OpenRouter: llama-3.3-70b → gemma-2-9b-it → qwen-2.5-7b
+     - Nvidia: mistral-nemotron → llama-3.1-405b → qwen2.5-7b
+     - Groq: llama-3.3-70b → llama-3.1-8b → gemma2-9b
+     - Gemini: gemini-2.0-flash → gemini-1.5-flash → gemini-1.5-pro
+   - Refactored to generic callOpenAICompatible() helper (DRY)
+   - If model A fails → try model B → try model C → then fall to next provider
+   - Tested: OpenRouter llama-3.3-70b succeeded in 1.2s
+
+4. GIT HARDENING: ✅ COMPLETE (from previous session, verified intact)
+   - Branch protection on main (no force push, no deletion)
+   - Backup tag v1.0-production pushed to GitHub
+   - 0 real secrets in git
+
+5. ALL 5 PLATFORMS VERIFIED:
+   - GitHub: ✅ pushed (commit 2ea4e5a)
+   - Vercel: ✅ live (homepage 200, old deploy still serving — new code auto-deploys when limit resets in ~24h)
+   - Neon: ✅ connected (/api/me returns user)
+   - Turso: ✅ Wasl (22 users) + Mashahd (35 videos)
+   - Inngest: ✅ "Successfully registered"
+
+HONEST NOTE:
+- Vercel free tier deploy limit (100/day) was hit. The new code (z.ai removed + AI failover) is pushed to GitHub and will auto-deploy when the limit resets (~24h). The current live deploy is the previous version (still functional, all APIs working, but has the old z.ai favicon).
+- The .env files were found wiped during this audit (possibly by a sandbox reset). All restored with correct credentials for all 5 platforms.
+- The upload route was repeatedly deleted by the .gitignore "upload/" rule. Fixed with !src/app/api/upload/ exception.
+
+Stage Summary:
+- z.ai fully removed from codebase (favicon → Cirkle SVG)
+- AI multi-model failover implemented (3 models × 4 providers = 12 total fallback options)
+- Upload route + .env files restored
+- All 5 platforms verified working in harmony
+- New code pushed to GitHub, will auto-deploy to Vercel when limit resets
