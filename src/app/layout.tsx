@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description: "A Facebook-like social experience built with Cirkle's animated logo & premium color themes.",
   keywords: ["Cirkle", "social", "connect", "chat", "share"],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/favicon.svg",
   },
 };
 

@@ -33,15 +33,16 @@ export interface GenerateResult {
 // ---------------------------------------------------------------------------
 // Provider keys (env-first, dev fallback)
 // ---------------------------------------------------------------------------
-const GROQ_KEY = process.env.GROQ_API_KEY || ""; // provided key returns 403 — set a valid one via env
+const GROQ_KEY = process.env.GROQ_API_KEY || "";
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || "";
-const GEMINI_KEY = process.env.GEMINI_API_KEY || ""; // provided key is region-blocked — set via env when unblocked
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const NVIDIA_KEY = process.env.NVIDIA_API_KEY || "";
 
-const NVIDIA_MODEL = "mistralai/mistral-nemotron";
-const OPENROUTER_MODEL = "meta-llama/llama-3.3-70b-instruct";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
-const GEMINI_MODEL = "gemini-2.0-flash";
+// Multiple models per provider — if one model fails, try another within the same provider.
+const NVIDIA_MODELS = ["mistralai/mistral-nemotron", "meta/llama-3.1-405b-instruct", "qwen/qwen2.5-7b-instruct"];
+const OPENROUTER_MODELS = ["meta-llama/llama-3.3-70b-instruct", "google/gemma-2-9b-it:free", "qwen/qwen-2.5-7b-instruct:free"];
+const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"];
+const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
 
 /** The Cirkle AI persona — warm, concise, premium, uses Cirkle vocabulary. */
 export const CIRKLE_SYSTEM_PROMPT = `You are the Cirkle AI companion — warm, insightful, and concise. Cirkle (دواير) is a premium social app with pillars: Wasl (chat), Mashahd (watch), Echoes (moments/stories), and the Circle (feed). You help users draft posts, suggest replies, summarize their feed, and spark ideas. Keep replies short (1-3 sentences unless asked for more). Use a friendly, sophisticated tone. Never mention you are powered by a specific upstream model — you are the Cirkle AI.`;
@@ -62,77 +63,55 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2000
 }
 
 // ---------------------------------------------------------------------------
-// Provider implementations
+// Provider implementations — each tries multiple models before failing
 // ---------------------------------------------------------------------------
-async function callNvidia(opts: GenerateOptions): Promise<GenerateResult> {
+
+/** Generic OpenAI-compatible chat completion caller — tries multiple models. */
+async function callOpenAICompatible(
+  url: string, key: string, models: string[], provider: ProviderName,
+  opts: GenerateOptions, extraHeaders: Record<string, string> = {}
+): Promise<GenerateResult> {
   const start = Date.now();
-  const res = await fetchWithTimeout("https://integrate.api.nvidia.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${NVIDIA_KEY}` },
-    body: JSON.stringify({
-      model: NVIDIA_MODEL,
-      messages: opts.messages,
-      max_tokens: opts.maxTokens ?? 600,
-      temperature: opts.temperature ?? 0.8,
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`Nvidia ${res.status}: ${t.slice(0, 200)}`);
+  let lastErr = "";
+  for (const model of models) {
+    try {
+      const res = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, ...extraHeaders },
+        body: JSON.stringify({
+          model,
+          messages: opts.messages,
+          max_tokens: opts.maxTokens ?? 600,
+          temperature: opts.temperature ?? 0.8,
+        }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        lastErr = `${provider} ${model} ${res.status}: ${t.slice(0, 150)}`;
+        continue; // try next model
+      }
+      const data = await res.json();
+      const text = data?.choices?.[0]?.message?.content?.trim() || "";
+      if (!text) { lastErr = `${provider} ${model} returned empty`; continue; }
+      return { text, provider, model, ms: Date.now() - start };
+    } catch (e) {
+      lastErr = `${provider} ${model}: ${e instanceof Error ? e.message.slice(0, 100) : String(e)}`;
+      continue; // try next model
+    }
   }
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content?.trim() || "";
-  if (!text) throw new Error("Nvidia returned empty content");
-  return { text, provider: "nvidia", model: NVIDIA_MODEL, ms: Date.now() - start };
+  throw new Error(lastErr || `${provider}: all models failed`);
+}
+
+async function callNvidia(opts: GenerateOptions): Promise<GenerateResult> {
+  return callOpenAICompatible("https://integrate.api.nvidia.com/v1/chat/completions", NVIDIA_KEY, NVIDIA_MODELS, "nvidia", opts);
 }
 
 async function callOpenRouter(opts: GenerateOptions): Promise<GenerateResult> {
-  const start = Date.now();
-  const res = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENROUTER_KEY}`,
-      "HTTP-Referer": "https://cirkle.app",
-      "X-Title": "Cirkle",
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: opts.messages,
-      max_tokens: opts.maxTokens ?? 600,
-      temperature: opts.temperature ?? 0.8,
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`OpenRouter ${res.status}: ${t.slice(0, 200)}`);
-  }
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content?.trim() || "";
-  if (!text) throw new Error("OpenRouter returned empty content");
-  return { text, provider: "openrouter", model: OPENROUTER_MODEL, ms: Date.now() - start };
+  return callOpenAICompatible("https://openrouter.ai/api/v1/chat/completions", OPENROUTER_KEY, OPENROUTER_MODELS, "openrouter", opts, { "HTTP-Referer": "https://cirkle.app", "X-Title": "Cirkle" });
 }
 
 async function callGroq(opts: GenerateOptions): Promise<GenerateResult> {
-  const start = Date.now();
-  const res = await fetchWithTimeout("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: opts.messages,
-      max_tokens: opts.maxTokens ?? 600,
-      temperature: opts.temperature ?? 0.8,
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`Groq ${res.status}: ${t.slice(0, 200)}`);
-  }
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content?.trim() || "";
-  if (!text) throw new Error("Groq returned empty content");
-  return { text, provider: "groq", model: GROQ_MODEL, ms: Date.now() - start };
+  return callOpenAICompatible("https://api.groq.com/openai/v1/chat/completions", GROQ_KEY, GROQ_MODELS, "groq", opts);
 }
 
 async function callGemini(opts: GenerateOptions): Promise<GenerateResult> {
@@ -141,24 +120,34 @@ async function callGemini(opts: GenerateOptions): Promise<GenerateResult> {
     .filter((m) => m.role !== "system")
     .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
   const systemInstruction = opts.messages.find((m) => m.role === "system");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
-  const res = await fetchWithTimeout(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents,
-      ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction.content }] } } : {}),
-      generationConfig: { maxOutputTokens: opts.maxTokens ?? 600, temperature: opts.temperature ?? 0.8 },
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`Gemini ${res.status}: ${t.slice(0, 200)}`);
+  let lastErr = "";
+  for (const model of GEMINI_MODELS) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`;
+      const res = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction.content }] } } : {}),
+          generationConfig: { maxOutputTokens: opts.maxTokens ?? 600, temperature: opts.temperature ?? 0.8 },
+        }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        lastErr = `Gemini ${model} ${res.status}: ${t.slice(0, 150)}`;
+        continue;
+      }
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+      if (!text) { lastErr = `Gemini ${model} returned empty`; continue; }
+      return { text, provider: "gemini", model, ms: Date.now() - start };
+    } catch (e) {
+      lastErr = `Gemini ${model}: ${e instanceof Error ? e.message.slice(0, 100) : String(e)}`;
+      continue;
+    }
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-  if (!text) throw new Error("Gemini returned empty content");
-  return { text, provider: "gemini", model: GEMINI_MODEL, ms: Date.now() - start };
+  throw new Error(lastErr || "Gemini: all models failed");
 }
 
 type ProviderName = "openrouter" | "nvidia" | "groq" | "gemini";

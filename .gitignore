@@ -56,3 +56,4 @@ server.log
 upload/
 agent-ctx/
 tool-results/
+!src/app/api/upload/
