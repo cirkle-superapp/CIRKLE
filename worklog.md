@@ -1260,3 +1260,31 @@ Stage Summary:
 - Upload route + .env files restored
 - All 5 platforms verified working in harmony
 - New code pushed to GitHub, will auto-deploy to Vercel when limit resets
+
+---
+Task ID: 42
+Agent: orchestrator
+Task: Fix preview + deploy z.ai removal + AI failover to Vercel
+
+Work Log:
+- Vercel deploy limit reset → deployed commit 2ea4e5a successfully
+- Verified on Vercel production:
+  - Homepage: HTTP 200 ✓
+  - Favicon: /favicon.svg (Cirkle 3-circle logo) ✓
+  - z.ai in HTML: 0 (fully removed) ✓
+  - AI: 200 (OpenRouter + Nvidia with multi-model failover) ✓
+  - Wasl: 200 (22 users from Turso) ✓
+  - Mashahd: 200 (35 videos from Turso) ✓
+  - Inngest: "Successfully registered" ✓
+  - Upload: works (stores in Cirkle Turso, returns /api/image/[id]) ✓
+- Fixed local dev preview:
+  - .env was reverted to SQLite → restored Neon Postgres URL
+  - Regenerated Prisma client
+  - Restarted dev server with all env vars
+  - Seeded Neon (16 posts)
+  - Verified: 16 posts loaded, Cirkle favicon, 0 z.ai references, 0 console errors
+
+Stage Summary:
+- Vercel production: NEW DEPLOY LIVE with z.ai removed + AI multi-model failover
+- Local preview: WORKING (16 posts, Cirkle favicon, 0 errors)
+- All 5 platforms in harmony: GitHub + Vercel + Neon + Turso + Inngest
