@@ -7,7 +7,7 @@ const LINKS = [
   { group: "Support", items: ["Help Center", "Safety", "Community Standards", "Report"] },
   {
     group: "Explore",
-    items: ["Wasl Chat", "Mashahd Watch"],
+    items: ["Wasl Chat", "Mashahd Watch", "Cirkle Mail"],
   },
   { group: "Legal", items: ["Privacy", "Terms", "Cookies", "Data residency"] },
 ];

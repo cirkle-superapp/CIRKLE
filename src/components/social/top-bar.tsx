@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Plus,
   Compass,
+  Mail,
 } from "lucide-react";
 import { CirkleLogo } from "@/components/brand/cirkle-logo";
 import { CirkleAvatar } from "@/components/brand/cirkle-avatar";
@@ -27,6 +28,7 @@ interface TopBarProps {
   onOpenProfile: (userId: string) => void;
   onOpenSearch: (initialQuery?: string) => void;
   onOpenDiscover: () => void;
+  onOpenMail: () => void;
 }
 
 /**
@@ -42,7 +44,7 @@ function useMounted() {
   return mounted;
 }
 
-export function TopBar({ onOpenChat, onOpenProfile, onOpenSearch, onOpenDiscover }: TopBarProps) {
+export function TopBar({ onOpenChat, onOpenProfile, onOpenSearch, onOpenDiscover, onOpenMail }: TopBarProps) {
   const { data: me } = useCurrentUser();
   const { data: notifData } = useNotifications();
   const markRead = useMarkNotificationsRead();
@@ -197,12 +199,12 @@ export function TopBar({ onOpenChat, onOpenProfile, onOpenSearch, onOpenDiscover
           </button>
 
           <button
-            onClick={onOpenChat}
-            title="Wasl"
-            aria-label="Open Wasl chat"
-            className="grid h-10 w-10 place-items-center rounded-full bg-muted/60 text-foreground transition hover:bg-muted"
+            onClick={onOpenMail}
+            title="Cirkle Mail"
+            aria-label="Open Cirkle Mail"
+            className="relative grid h-10 w-10 place-items-center rounded-full bg-muted/60 text-foreground transition hover:bg-muted"
           >
-            <MessageCircle className="h-5 w-5" />
+            <Mail className="h-5 w-5" />
           </button>
 
           {me && (

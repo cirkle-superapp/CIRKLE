@@ -24,6 +24,7 @@ import { CulturalInterpreter } from "./cultural-interpreter";
 import { PrivacySimulator } from "./privacy-simulator";
 import { FamilyVault } from "./family-vault";
 import { TicketWallet } from "./ticket-wallet";
+import { MailPanel } from "./mail-panel";
 import { useToast } from "@/hooks/use-toast";
 import { Home, MessageCircle, Play, Compass } from "lucide-react";
 
@@ -55,6 +56,7 @@ function CirkleApp() {
   const [vaultOpen, setVaultOpen] = React.useState(false);
   const [ticketsOpen, setTicketsOpen] = React.useState(false);
   const [pulseBumped, setPulseBumped] = React.useState(0);
+  const [mailOpen, setMailOpen] = React.useState(false);
 
   // Global Cmd/Ctrl+K to open the command palette.
   React.useEffect(() => {
@@ -161,6 +163,7 @@ function CirkleApp() {
           onOpenProfile={openProfile}
           onOpenSearch={openSearch}
           onOpenDiscover={() => setDiscoverOpen(true)}
+          onOpenMail={() => setMailOpen(true)}
         />
 
         {/* Pulse ribbon — thin live-activity heat strip under the top bar */}
@@ -199,6 +202,9 @@ function CirkleApp() {
 
         {/* Mashahd video panel */}
         <MashahdPanel open={mashahdOpen} onOpenChange={setMashahdOpen} />
+
+        {/* Cirkle Mail overlay */}
+        <MailPanel open={mailOpen} onOpenChange={setMailOpen} />
 
         {/* Profile overlay */}
         <ProfilePanel
